@@ -1,9 +1,8 @@
-package com.learn.ex03.pyrmont;
+package com.learn.ex03.pyrmont.connector;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.WeakHashMap;
 
 /**
  * Created by huyan on 2016/8/29.

@@ -2,8 +2,10 @@ package com.learn.ex03.pyrmont.connector.http;
 
 /**
  * Created by huyan on 16/8/30.
+ * http请求行内容，及第一行内容
+ * 包括 URI 请求方法 请求协议
  */
-final class HttpRequestLine {
+public final class HttpRequestLine {
 
     public static final int INITIAL_METHOD_SIZE = 8;
     public static final int INITIAL_URI_SIZE = 64;
@@ -24,6 +26,7 @@ final class HttpRequestLine {
         this(new char[INITIAL_METHOD_SIZE], 0, new char[INITIAL_URI_SIZE], 0,
                 new char[INITIAL_PROTOCOL_SIZE], 0);
     }
+
     public HttpRequestLine(char[] method, int methodEnd,
                            char[] uri, int uriEnd,
                            char[] protocol, int protocolEnd) {

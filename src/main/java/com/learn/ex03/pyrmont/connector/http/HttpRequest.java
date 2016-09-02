@@ -20,7 +20,9 @@ import java.util.Map;
 /**
  * Created by huyan on 16/8/29.
  */
-public class HttpRquest implements HttpServletRequest {
+public class HttpRequest implements HttpServletRequest {
+
+    private String queryString;
 
     protected SimpleDateFormat formats[] = {
             new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
@@ -33,6 +35,8 @@ public class HttpRquest implements HttpServletRequest {
     protected Map<String, Object> attributes = new HashMap<String, Object>();
 
     protected ParameterMap<String, Object> paramters = new ParameterMap<String, Object>();
+
+
 
     @Override
     public String getAuthType() {

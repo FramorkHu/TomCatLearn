@@ -2,7 +2,7 @@ package com.learn.ex03.pyrmont.connector.http;
 
 /**
  * Created by huyan on 16/9/1.
- * HTTP头
+ * HTTP 头
  */
 public class HttpHeader {
 
@@ -11,10 +11,10 @@ public class HttpHeader {
     public static final int MAX_NAME_SIZE = 128;
     public static final int MAX_VALUE_SIZE = 4096;
 
-    private char[] name;
-    private int nameEnd;
-    private char[] value;
-    private int valueEnd;
+    public char[] name;
+    public int nameEnd;
+    public char[] value;
+    public int valueEnd;
 
     private int hashCode = 0;
 

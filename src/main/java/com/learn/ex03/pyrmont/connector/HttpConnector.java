@@ -1,5 +1,6 @@
 package com.learn.ex03.pyrmont.connector;
 
+import com.learn.ex03.pyrmont.connector.http.HttpHeader;
 import com.learn.ex03.pyrmont.connector.http.HttpRequestLine;
 import com.learn.ex03.pyrmont.connector.http.SocketInputStream;
 
@@ -37,7 +38,12 @@ public class HttpConnector implements Runnable {
                 socket = server.accept();
                 socket.getInputStream();
                 SocketInputStream inputStream = new SocketInputStream(socket.getInputStream(), 1024);
-                inputStream.readRequestLine(new HttpRequestLine());
+                HttpRequestLine requestLine = new HttpRequestLine();
+                inputStream.readRequestLine(requestLine);
+                System.out.println(String.valueOf(requestLine.method)+" " +String.valueOf(requestLine.uri));
+                inputStream.readHeader(new HttpHeader());
+
+                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
                 continue;

@@ -1,5 +1,6 @@
 package com.learn.ex03.pyrmont.connector.http;
 
+import java.awt.event.HierarchyEvent;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +64,156 @@ public class SocketInputStream extends InputStream {
 
     }
 
-    protected void readHeader()
+    /**
+     * 处理http头请求
+     * @param header
+     * @throws IOException
+     */
+    public void readHeader(HttpHeader header) throws IOException {
+
+        if (header.nameEnd != 0){
+            header.recycle();
+        }
+
+        int chr = read();
+
+        //换行的情况 /r/n 或 /n
+        if ((chr == CR) || (chr == LF)){
+            if (chr == CR){
+                read(); //再往下读一个，即跳过LF
+            }
+            header.nameEnd = 0;
+            header.valueEnd = 0;
+        } else {
+            pos --;
+        }
+
+        int maxRead = header.name.length;
+        int readCount = 0;
+        boolean colon = false;
+
+        while (!colon){
+
+            if (readCount>= maxRead){
+
+                if ((2*readCount)<= HttpHeader.MAX_NAME_SIZE){
+
+                    char[] newBuffer = new char[2*readCount];
+                    System.arraycopy(header.name,0, newBuffer,0,maxRead);
+                    header.name = newBuffer;
+                    maxRead = header.name.length;
+                } else {
+                    throw new IOException("requestStream");
+                }
+            }
+
+            if (pos>=count){
+                int val = read();
+                if (val == -1){
+                    throw new IOException("requestStream.readline.error");
+                }
+                pos = 0;
+            }
+
+            char val = (char)buf[pos];
+
+            if (val == COLON){
+                colon = true;
+            }else {
+                //将大写转换为小写
+                if ((val>'A') && (val<'Z')){
+                    val = (char) (val- LC_OFFSET);
+                }
+                header.name[readCount] = val;
+                readCount++;
+                pos++;
+            }
+
+        }
+        header.nameEnd = readCount;
+
+
+        //读取value
+        maxRead = header.value.length;
+        readCount = 0;
+        boolean eol = false;
+        boolean validLine = true;
+
+        while (validLine){
+
+            boolean space = true;
+            //删除开头的空格
+            while (space){
+                char val = (char)read();
+                if ((val== SP) || (val == HT)){
+
+                } else {
+                    space = false;
+                }
+
+            }
+
+            while (!eol){
+
+                if (readCount >= maxRead) {
+                    if ((2 * maxRead) <= HttpHeader.MAX_VALUE_SIZE) {
+                        char[] newBuffer = new char[2 * maxRead];
+                        System.arraycopy(header.value, 0, newBuffer, 0,
+                                maxRead);
+                        header.value = newBuffer;
+                        maxRead = header.value.length;
+                    } else {
+                        throw new IOException("requestStream.readline.toolong");
+                    }
+                }
+
+                if (pos >= count) {
+                    // Copying part (or all) of the internal buffer to the line
+                    // buffer
+                    int val = read();
+                    if (val == -1)
+                        throw new IOException("requestStream.readline.error");
+                    pos = 0;
+                }
+                if (buf[pos] == CR) {
+                } else if (buf[pos] == LF) {
+                    eol = true;
+                } else {
+                    // FIXME : Check if binary conversion is working fine
+                    int ch = buf[pos] & 0xff;
+                    header.value[readCount] = (char) ch;
+                    readCount++;
+                }
+                pos++;
+            }
+
+            int nextChar = read();
+            if ((nextChar!=SP) && (nextChar!= HT)){
+
+                validLine = false;
+                pos--;
+            } else {
+                eol = false;
+                if (readCount >= maxRead){
+                    if ((2 * maxRead) <= HttpHeader.MAX_VALUE_SIZE) {
+                        char[] newBuffer = new char[2 * maxRead];
+                        System.arraycopy(header.value, 0, newBuffer, 0,
+                                maxRead);
+                        header.value = newBuffer;
+                        maxRead = header.value.length;
+                    } else {
+                        throw new IOException("requestStream.readline.toolong");
+                    }
+                }
+                header.value[readCount] = ' ';
+                readCount++;
+            }
+
+        }
+        header.valueEnd = readCount;
+
+    }
+
     /**
      * 读取请求行的各个部分
      * @param partBuffer 请求区域的缓冲字符数组
@@ -141,5 +291,19 @@ public class SocketInputStream extends InputStream {
         if (nRead >0){
             count = nRead;
         }
+    }
+
+    public int available() throws IOException {
+
+        return (count-pos)+ inputStream.available();
+    }
+
+    public void close() throws IOException {
+        if (inputStream == null){
+            return;
+        }
+        inputStream.close();
+        inputStream = null;
+        buf = null;
     }
 }

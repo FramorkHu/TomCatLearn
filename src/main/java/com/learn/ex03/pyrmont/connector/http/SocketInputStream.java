@@ -16,7 +16,7 @@ public class SocketInputStream extends InputStream {
     private static final byte COLON = ':';
     private static final int LC_OFFSET = 'A' - 'a';
 
-    //数据缓冲区
+    //当前读取的数据缓冲区
     protected byte buf[];
     //缓冲区可用大小
     protected int count;
@@ -53,20 +53,29 @@ public class SocketInputStream extends InputStream {
         pos -- ;
 
         //读取方法
-        requestLine.methodEnd = readPart(requestLine.method, HttpRequestLine.MAX_METHOD_SIZE);
+        requestLine.methodEnd = readLinePart(requestLine.method, HttpRequestLine.MAX_METHOD_SIZE);
 
         //读取uri
-        requestLine.uriEnd = readPart(requestLine.uri, HttpRequestLine.MAX_URI_SIZE);
+        requestLine.uriEnd = readLinePart(requestLine.uri, HttpRequestLine.MAX_URI_SIZE);
 
         //读取协议
-        requestLine.protocolEnd = readPart(requestLine.protocol, HttpRequestLine.MAX_PROTOCOL_SIZE);
+        requestLine.protocolEnd = readLinePart(requestLine.protocol, HttpRequestLine.MAX_PROTOCOL_SIZE);
 
     }
 
-    private int readPart(char[] partBuffer, int maxPartSize) throws IOException {
+    protected void readHeader()
+    /**
+     * 读取请求行的各个部分
+     * @param partBuffer 请求区域的缓冲字符数组
+     * @param maxPartSize 最大缓冲区长度
+     * @return
+     * @throws IOException
+     */
+    private int readLinePart(char[] partBuffer, int maxPartSize) throws IOException {
         int maxRead = partBuffer.length;
         int readCount = 0;
 
+        //读取结束
         boolean readEnd = false;
 
         while (!readEnd){
@@ -84,6 +93,7 @@ public class SocketInputStream extends InputStream {
                 }
             }
 
+            //数据读完是继续读取
             if (pos >= count){
                 int val = read();
                 if (val == -1){
@@ -106,6 +116,7 @@ public class SocketInputStream extends InputStream {
 
         return readCount;
     }
+
 
     @Override
     public int read() throws IOException {

@@ -138,19 +138,15 @@ public class SocketInputStream extends InputStream {
         readCount = 0;
         boolean eol = false;
         boolean validLine = true;
-
         while (validLine){
 
             boolean space = true;
             //删除开头的空格
             while (space){
                 char val = (char)read();
-                if ((val== SP) || (val == HT)){
-
-                } else {
+                if ((val!= SP) && (val != HT)){
                     space = false;
                 }
-
             }
 
             while (!eol){

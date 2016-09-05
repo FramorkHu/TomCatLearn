@@ -12,10 +12,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by huyan on 16/8/29.
@@ -23,6 +20,19 @@ import java.util.Map;
 public class HttpRequest implements HttpServletRequest {
 
     private String queryString;
+    private String requestSessionId;
+    private boolean requestSessionUri;
+    private String method;
+    private String requestUri;
+    private String protocol;
+    private int contentLength;
+    private String contentType;
+    private boolean requestSessionCookie;
+
+    protected Map<String, List<String>> headers = new HashMap<>();
+    protected List<Cookie> cookies = new ArrayList<>();
+
+    protected Map<String, Object> attributes = new HashMap<>();
 
     protected SimpleDateFormat formats[] = {
             new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
@@ -30,13 +40,66 @@ public class HttpRequest implements HttpServletRequest {
             new SimpleDateFormat("EEE MMMM d HH:mm:ss yyyy", Locale.US)
     };
 
-    protected Map<String, Object> header = new HashMap<String, Object>();
 
-    protected Map<String, Object> attributes = new HashMap<String, Object>();
+    public void addHeader(String name, String value){
 
-    protected ParameterMap<String, Object> paramters = new ParameterMap<String, Object>();
+        name = name.toLowerCase();
 
+        synchronized (headers){
+            List<String> values = headers.get(name);
+            if (values == null){
+                values = new ArrayList<>();
+                headers.put(name, values);
+            }
+            values.add(value);
+        }
+    }
 
+    public void addCookie(Cookie cookie){
+        synchronized (cookies){
+            cookies.add(cookie);
+        }
+    }
+
+    public boolean isRequestSessionUri() {
+        return requestSessionUri;
+    }
+
+    public void setRequestSessionUri(boolean requestSessionUri) {
+        this.requestSessionUri = requestSessionUri;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
+    }
+
+    public void setRequestSessionId(String requestSessionId) {
+        this.requestSessionId = requestSessionId;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public void setRequestUri(String requestUri) {
+        this.requestUri = requestUri;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public void setContentLength(int contentLength) {
+        this.contentLength = contentLength;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public void setRequestSessionCookie(boolean requestSessionCookie) {
+        this.requestSessionCookie = requestSessionCookie;
+    }
 
     @Override
     public String getAuthType() {
@@ -75,7 +138,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getMethod() {
-        return null;
+        return this.method;
     }
 
     @Override
@@ -95,7 +158,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getQueryString() {
-        return null;
+        return this.queryString;
     }
 
     @Override
@@ -115,12 +178,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getRequestedSessionId() {
-        return null;
+        return this.requestSessionId;
     }
 
     @Override
     public String getRequestURI() {
-        return null;
+        return this.requestUri;
     }
 
     @Override
@@ -150,7 +213,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public boolean isRequestedSessionIdFromCookie() {
-        return false;
+        return this.requestSessionCookie;
     }
 
     @Override
@@ -185,12 +248,12 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public int getContentLength() {
-        return 0;
+        return this.contentLength;
     }
 
     @Override
     public String getContentType() {
-        return null;
+        return this.contentType;
     }
 
     @Override
@@ -220,7 +283,7 @@ public class HttpRequest implements HttpServletRequest {
 
     @Override
     public String getProtocol() {
-        return null;
+        return this.protocol;
     }
 
     @Override

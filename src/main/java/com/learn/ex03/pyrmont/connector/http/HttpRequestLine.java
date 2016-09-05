@@ -2,6 +2,7 @@ package com.learn.ex03.pyrmont.connector.http;
 
 /**
  * Created by huyan on 16/8/30.
+ * GET /index.html Http/1.1
  * http请求行内容，及第一行内容
  * 包括 URI 请求方法 请求协议
  */

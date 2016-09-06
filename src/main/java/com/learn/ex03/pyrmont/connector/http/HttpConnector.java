@@ -35,11 +35,21 @@ public class HttpConnector implements Runnable {
                 continue;
             }
 
-            HttpProcessor processor = new HttpProcessor(this);
+            HttpProcessor processor = new HttpProcessor();
 
             processor.process(socket);
 
         }
 
     }
+
+    public void start(){
+
+        Thread connectThread = new Thread(this);
+        connectThread.start();
+    }
+
+
+
+
 }

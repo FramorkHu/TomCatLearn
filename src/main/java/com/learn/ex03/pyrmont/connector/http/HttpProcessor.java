@@ -1,6 +1,8 @@
 package com.learn.ex03.pyrmont.connector.http;
 
 
+import com.learn.ex03.pyrmont.ServletProcessor;
+import com.learn.ex03.pyrmont.StaticResourceProcessor;
 import org.apache.catalina.util.RequestUtil;
 
 import javax.servlet.ServletException;
@@ -16,12 +18,9 @@ import java.net.Socket;
 public class HttpProcessor {
 
     private HttpRequestLine requestLine = new HttpRequestLine();
-    private HttpConnector connector;
     private HttpRequest request;
+    private HttpResponse response;
 
-    public HttpProcessor(HttpConnector connector){
-        this.connector = connector;
-    }
 
     public void process(Socket socket){
         SocketInputStream input = null;
@@ -32,9 +31,27 @@ public class HttpProcessor {
             input = new SocketInputStream(socket.getInputStream(), 1024);
             out = socket.getOutputStream();
 
+            request = new HttpRequest(input);
 
+            response = new HttpResponse(out);
+            response.setRequest(request);
+
+            parseRequest(input);
+            parseHeader(input);
+
+            if (request.getRequestURI().startsWith("/servlet")){
+                ServletProcessor processor = new ServletProcessor();
+                processor.process(request, response);
+
+            } else {
+                StaticResourceProcessor processor = new StaticResourceProcessor();
+                processor.process(request, response);
+            }
+
+
+            socket.close();
         } catch (Exception e){
-
+            e.printStackTrace();
         }
     }
 

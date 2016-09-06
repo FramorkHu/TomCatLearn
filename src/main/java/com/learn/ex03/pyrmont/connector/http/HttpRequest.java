@@ -45,6 +45,10 @@ public class HttpRequest implements HttpServletRequest {
     private boolean parse = false;
     private ParameterMap parameters;
 
+    public HttpRequest(InputStream input){
+        this.input = input;
+    }
+
     protected SimpleDateFormat formats[] = {
             new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
             new SimpleDateFormat("EEEEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),

@@ -1,15 +1,20 @@
 package com.learn.ex03.pyrmont.connector.http;
 
+import org.apache.catalina.connector.RequestStream;
 import org.apache.catalina.util.ParameterMap;
+import org.apache.catalina.util.RequestUtil;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -19,9 +24,11 @@ import java.util.*;
  */
 public class HttpRequest implements HttpServletRequest {
 
+    private static final String DEFAULT_ENCODING = "UTF-8";
     private String queryString;
     private String requestSessionId;
     private boolean requestSessionUri;
+    private InputStream input;
     private String method;
     private String requestUri;
     private String protocol;
@@ -29,10 +36,14 @@ public class HttpRequest implements HttpServletRequest {
     private String contentType;
     private boolean requestSessionCookie;
 
+
     protected Map<String, List<String>> headers = new HashMap<>();
     protected List<Cookie> cookies = new ArrayList<>();
 
     protected Map<String, Object> attributes = new HashMap<>();
+
+    private boolean parse = false;
+    private ParameterMap parameters;
 
     protected SimpleDateFormat formats[] = {
             new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US),
@@ -54,6 +65,64 @@ public class HttpRequest implements HttpServletRequest {
             values.add(value);
         }
     }
+
+    /**
+     * 解析参数
+     * 1、查询字符串 GET
+     * 2、HTTP请求体中 POST
+     */
+    public void parseParameters() throws IOException {
+
+        if (parse){
+            return;
+        }
+
+        ParameterMap results = parameters;
+
+        if (results == null) {
+            results = new ParameterMap();
+        }
+        results.setLocked(true);  // ?应该是锁不住的，多个线程执行（不用考虑，没有共享变量）
+
+        String encoding = getCharacterEncoding();
+        if (null == encoding){
+            encoding = DEFAULT_ENCODING;
+        }
+        String queryString = getQueryString();
+
+        try {
+            RequestUtil.parseParameters(results, queryString, encoding);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        //如果是post提交，请求体会包含参数
+        //Content-Type:application/x-www-form-urlencoded     Content-Length>0
+        String contentType = getContentType();
+        if (contentType == null){
+            contentType = "";
+        }
+        int semicolon = contentType.indexOf(";");
+
+        if (semicolon>0){
+            contentType = contentType.substring(0, semicolon).trim();
+        } else {
+            contentType = contentType.trim();
+        }
+        if ( "POST".equals(getMethod())
+                && getContentLength()>0
+                && "application/x-www-form-urlencoded".equals(contentType) ){
+
+            int max = getContentLength();
+            int len = 0;
+            byte[] buf = new byte[getContentLength()];
+
+            //ServletInputStream inputStream = getInputStream();
+
+        }
+
+    }
+
 
     public void addCookie(Cookie cookie){
         synchronized (cookies){
@@ -99,6 +168,10 @@ public class HttpRequest implements HttpServletRequest {
 
     public void setRequestSessionCookie(boolean requestSessionCookie) {
         this.requestSessionCookie = requestSessionCookie;
+    }
+
+    public InputStream getStream() {
+        return input;
     }
 
     @Override

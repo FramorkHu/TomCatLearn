@@ -28,19 +28,18 @@ public class Request implements ServletRequest {
     public void parse(){
 
         StringBuffer request = new StringBuffer();
-        int i;
-        byte[] buffer = new byte[2048];
+
+        byte[] buffer = new byte[800];
 
         try{
-            i = input.read(buffer);
+            int i = input.read(buffer);
+
+            while (i!=-1){
+                request.append( new String(buffer, 0, i));
+                i = input.read(buffer);
+            }
         }catch (Exception e){
             e.printStackTrace();
-            i=-1;
-        }
-
-        for (int j=0; j<i; j++){
-
-            request.append( (char)buffer[j]);
         }
 
         System.out.println(request.toString());

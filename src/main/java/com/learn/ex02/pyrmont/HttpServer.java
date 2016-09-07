@@ -11,7 +11,7 @@ import java.net.Socket;
  */
 public class HttpServer {
 
-    private static final int PORT = 9999;
+    private static final int PORT = 8888;
 
     private static final String SHUTDOWN_COMMAND = "/SHUTDOWN";
 

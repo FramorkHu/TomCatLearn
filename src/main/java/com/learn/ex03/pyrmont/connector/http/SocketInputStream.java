@@ -37,6 +37,11 @@ public class SocketInputStream extends InputStream {
             requestLine.recycle();
         }
 
+        /**
+         * 对应socketInputStream，无法确定什么时候读完，这样的概念很模糊，因为套接字中数据的末尾并没有所谓的结束标记，会引起read阻塞。
+         * 当TCP 通信连接的一方关闭了套接字时，read返回-1。
+         * 对于解析http请求，如果一开始就读到/r/n ，则表明读取完毕
+         */
         int chr;
         do {
 
@@ -49,6 +54,7 @@ public class SocketInputStream extends InputStream {
         } while ( (chr == CR)|| (chr ==  LF));
 
         if ( chr == -1){
+            //return;
             throw new EOFException("requestStream.readline.error");
         }
         pos -- ;
@@ -84,6 +90,7 @@ public class SocketInputStream extends InputStream {
             }
             header.nameEnd = 0;
             header.valueEnd = 0;
+            return;
         } else {
             pos --;
         }

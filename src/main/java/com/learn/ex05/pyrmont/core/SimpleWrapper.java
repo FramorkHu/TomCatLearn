@@ -18,6 +18,7 @@ public class SimpleWrapper implements Wrapper {
     protected Container parent;
     private Pipeline pipeline = new SimplePipeline();
     private String servletClass;
+    private String name;
 
     public SimpleWrapper(){
 
@@ -102,7 +103,7 @@ public class SimpleWrapper implements Wrapper {
 
     @Override
     public Servlet allocate() throws ServletException {
-        ClassLoader classLoader = loader.getClassLoader();
+        ClassLoader classLoader = getLoader().getClassLoader();
         try {
             Class aClass = classLoader.loadClass(servletClass);
             return (Servlet)aClass.newInstance();
@@ -221,12 +222,12 @@ public class SimpleWrapper implements Wrapper {
 
     @Override
     public String getName() {
-        return null;
+        return this.name;
     }
 
     @Override
     public void setName(String name) {
-
+        this.name = name;
     }
 
     @Override

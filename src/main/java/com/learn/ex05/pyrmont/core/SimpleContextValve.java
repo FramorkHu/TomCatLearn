@@ -16,6 +16,9 @@ public class SimpleContextValve implements Valve, Contained {
 
     private Container container;
 
+    public SimpleContextValve(Context container){
+        this.container = container;
+    }
     @Override
     public String getInfo() {
         return null;
@@ -33,23 +36,17 @@ public class SimpleContextValve implements Valve, Contained {
             return;
         }
 
-        HttpServletRequest hreq = (HttpServletRequest)servletRequest;
-        HttpServletResponse hres = (HttpServletResponse)servletResponse;
-
-        String contextPath = hreq.getContextPath();
-        String uri = ((HttpRequest)request).getDecodedRequestURI();
-        String relativeURI = uri.substring(contextPath.length()).toUpperCase();
+        String requestURI = ((HttpRequest) request).getDecodedRequestURI();
 
         Context context = (Context)getContainer();
 
         Wrapper wrapper = (Wrapper) context.map(request, true);
 
         if (wrapper ==null){
-
+            notFound(requestURI, (HttpServletResponse) response.getResponse());
         }
         response.setContext(context);
         wrapper.invoke(request, response);
-
 
     }
 
@@ -62,5 +59,30 @@ public class SimpleContextValve implements Valve, Contained {
     @Override
     public void setContainer(Container container) {
         this.container = container;
+    }
+
+
+    private void badRequest(String requestURI, HttpServletResponse response) {
+        try {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, requestURI);
+        }
+        catch (IllegalStateException e) {
+            ;
+        }
+        catch (IOException e) {
+            ;
+        }
+    }
+
+    private void notFound(String requestURI, HttpServletResponse response) {
+        try {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, requestURI);
+        }
+        catch (IllegalStateException e) {
+            ;
+        }
+        catch (IOException e) {
+            ;
+        }
     }
 }

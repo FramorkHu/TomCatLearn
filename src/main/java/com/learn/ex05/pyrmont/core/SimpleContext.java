@@ -7,8 +7,13 @@ import org.apache.catalina.util.CharsetMapper;
 import javax.naming.directory.DirContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by huyan on 2016/9/8.
@@ -16,10 +21,16 @@ import java.io.IOException;
 public class SimpleContext implements Context,Pipeline {
 
     SimplePipeline pipeline = new SimplePipeline();
+    private Map<String, String> servletMapping = new HashMap<>();
+    Mapper mapper;
+    Map<String, Mapper> mappers = new HashMap<>();
+    Map<String, Container> childs = new HashMap<>();
+    private Loader loader;
+    private Container parent;
 
     public SimpleContext(){
 
-        pipeline.setBasic( new SimpleContextValve());
+        pipeline.setBasic( new SimpleContextValve( this));
     }
 
     @Override
@@ -295,6 +306,7 @@ public class SimpleContext implements Context,Pipeline {
     @Override
     public void addServletMapping(String pattern, String name) {
 
+        servletMapping.put(pattern, name);
     }
 
     @Override
@@ -469,7 +481,7 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public String findServletMapping(String pattern) {
-        return null;
+        return servletMapping.get(pattern);
     }
 
     @Override
@@ -639,12 +651,18 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public Loader getLoader() {
+        if (loader!=null){
+            return loader;
+        }
+        if (this.parent.getLoader()!=null){
+            return parent.getLoader();
+        }
         return null;
     }
 
     @Override
     public void setLoader(Loader loader) {
-
+        this.loader = loader;
     }
 
     @Override
@@ -694,7 +712,7 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public void setParent(Container container) {
-
+        this.parent = container;
     }
 
     @Override
@@ -729,6 +747,10 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public void addChild(Container child) {
+        child.setParent(this);
+
+
+        childs.put( child.getName(), child);
 
     }
 
@@ -740,6 +762,15 @@ public class SimpleContext implements Context,Pipeline {
     @Override
     public void addMapper(Mapper mapper) {
 
+        String protocol = mapper.getProtocol();
+
+        synchronized (mappers){
+            if (mappers.get(protocol)!=null){
+                throw new IllegalArgumentException("add mapper protocol:["+mapper.getProtocol()+"] is not unique");
+            }
+            mapper.setContainer(this);
+            mappers.put(protocol, mapper);
+        }
     }
 
     @Override
@@ -749,7 +780,8 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public Container findChild(String name) {
-        return null;
+        return childs.get(name);
+
     }
 
     @Override
@@ -764,12 +796,12 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public Mapper findMapper(String protocol) {
-        return null;
+        return mappers.get(protocol);
     }
 
     @Override
     public Mapper[] findMappers() {
-        return new Mapper[0];
+        return mappers.values().toArray(new Mapper[mappers.size()]);
     }
 
     @Override
@@ -805,7 +837,13 @@ public class SimpleContext implements Context,Pipeline {
 
     @Override
     public Container map(Request request, boolean update) {
-        return null;
+        Mapper mapper = findMapper( request.getRequest().getProtocol() );
+
+        if (mapper == null){
+            return null;
+        }
+        return mapper.map(request, update);
+
     }
 
     @Override

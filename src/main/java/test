@@ -1,0 +1,32 @@
+org.apache.http.impl.client
+CloseableHttpClient client = HttpClients.createDefault();
+        HttpPost post = new HttpPost("http://napi.passport.tuan800.com/users/parse_user_id");
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(5000).setConnectTimeout(5000).build();//设置请求和传输超时时间
+        post.setConfig(requestConfig);
+        try {
+
+            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            params.add(new BasicNameValuePair("input_value", key));
+            params.add(new BasicNameValuePair("token", token));
+
+            post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+
+            HttpResponse response = client.execute(post);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                String result = EntityUtils.toString(response.getEntity());
+                JsonNode jsonNode = objectMapper.readTree(result);
+                int status = jsonNode.get("status").getIntValue();
+                if (HttpStatus.SC_OK == status) {
+                    return jsonNode.get("user").get("id").getIntValue() + "";
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error("[" + key + "|" + token + "]抓取内容或解析出错,", e);
+        } finally {
+            try {
+                client.close();
+            } catch (IOException e) {
+                LOGGER.error("httpclient 关闭出错", e);
+            }
+        }
+        return null;

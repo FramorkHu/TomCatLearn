@@ -1,6 +1,6 @@
 package com.learn.ex06.pyrmont.core;
 
-import com.learn.ex05.pyrmont.core.SimplePipeline;
+
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.*;
 import org.apache.catalina.util.CharsetMapper;
@@ -11,18 +11,30 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by huyan on 16/9/19.
+ * Created by huyan on 2016/9/8.
  */
-public class SimpleContext implements Context, Lifecycle {
+public class SimpleContext implements Context,Pipeline, Lifecycle {
 
-    private boolean started;
+    SimplePipeline pipeline = new SimplePipeline();
+
+    private Map<String, String> servletMapping = new HashMap<>();
+    Mapper mapper;
+    Map<String, Mapper> mappers = new HashMap<>();
+    Map<String, Container> childs = new HashMap<>();
     private Loader loader;
     private Container parent;
-    private Pipeline pipeline = new SimplePipeline();
 
-    protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+    private boolean started = false;
+    LifecycleSupport lifecycle = new LifecycleSupport(this);
+
+    public SimpleContext(){
+
+        pipeline.setBasic( new SimpleContextValve( this));
+    }
 
     @Override
     public Object[] getApplicationListeners() {
@@ -297,6 +309,7 @@ public class SimpleContext implements Context, Lifecycle {
     @Override
     public void addServletMapping(String pattern, String name) {
 
+        servletMapping.put(pattern, name);
     }
 
     @Override
@@ -471,7 +484,7 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public String findServletMapping(String pattern) {
-        return null;
+        return servletMapping.get(pattern);
     }
 
     @Override
@@ -641,11 +654,11 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public Loader getLoader() {
-        if (loader != null){
+        if (loader!=null){
             return loader;
         }
-        if (parent.getLoader()!=null){
-            parent.getLoader();
+        if (this.parent.getLoader()!=null){
+            return parent.getLoader();
         }
         return null;
     }
@@ -697,7 +710,7 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public Container getParent() {
-        return this.parent;
+        return null;
     }
 
     @Override
@@ -737,6 +750,10 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public void addChild(Container child) {
+        child.setParent(this);
+
+
+        childs.put( child.getName(), child);
 
     }
 
@@ -748,6 +765,15 @@ public class SimpleContext implements Context, Lifecycle {
     @Override
     public void addMapper(Mapper mapper) {
 
+        String protocol = mapper.getProtocol();
+
+        synchronized (mappers){
+            if (mappers.get(protocol)!=null){
+                throw new IllegalArgumentException("add mapper protocol:["+mapper.getProtocol()+"] is not unique");
+            }
+            mapper.setContainer(this);
+            mappers.put(protocol, mapper);
+        }
     }
 
     @Override
@@ -757,12 +783,13 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public Container findChild(String name) {
-        return null;
+        return childs.get(name);
+
     }
 
     @Override
     public Container[] findChildren() {
-        return new Container[0];
+        return childs.values().toArray(new Container[childs.size()]);
     }
 
     @Override
@@ -772,22 +799,54 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public Mapper findMapper(String protocol) {
-        return null;
+        return mappers.get(protocol);
     }
 
     @Override
     public Mapper[] findMappers() {
-        return new Mapper[0];
+        return mappers.values().toArray(new Mapper[mappers.size()]);
+    }
+
+    @Override
+    public Valve getBasic() {
+        return null;
+    }
+
+    @Override
+    public void setBasic(Valve valve) {
+        this.setBasic(valve);
+    }
+
+    @Override
+    public void addValve(Valve valve) {
+        pipeline.addValve(valve);
+    }
+
+    @Override
+    public Valve[] getValves() {
+        return pipeline.getValves();
     }
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
 
+        pipeline.invoke(request, response);
+    }
+
+    @Override
+    public void removeValve(Valve valve) {
+
     }
 
     @Override
     public Container map(Request request, boolean update) {
-        return null;
+        Mapper mapper = findMapper( request.getRequest().getProtocol() );
+
+        if (mapper == null){
+            return null;
+        }
+        return mapper.map(request, update);
+
     }
 
     @Override
@@ -828,6 +887,7 @@ public class SimpleContext implements Context, Lifecycle {
     @Override
     public synchronized void start() throws LifecycleException {
 
+        System.out.println("Start SimpleContext");
         if (started){
             throw new LifecycleException("SimpleContext has already started");
         }
@@ -862,6 +922,39 @@ public class SimpleContext implements Context, Lifecycle {
 
     @Override
     public void stop() throws LifecycleException {
+
+        if (!started){
+
+            throw new LifecycleException("SimpleContext is not start");
+        }
+
+        lifecycle.fireLifecycleEvent(BEFORE_STOP_EVENT, null);
+        lifecycle.fireLifecycleEvent(STOP_EVENT, null);
+        started = false;
+
+        try {
+            if (pipeline instanceof Lifecycle){
+                ((Lifecycle) pipeline).stop();
+            }
+
+            Container[] children = findChildren();
+            for (Container child : children){
+
+                if (child instanceof Lifecycle){
+                    ((Lifecycle) child).stop();
+                }
+            }
+
+            if (loader!=null
+                    && (loader instanceof Lifecycle)){
+
+                ((Lifecycle) loader).stop();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        lifecycle.fireLifecycleEvent(AFTER_STOP_EVENT, null);
 
     }
 }

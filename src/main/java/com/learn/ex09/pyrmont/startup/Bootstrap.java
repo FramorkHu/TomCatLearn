@@ -7,7 +7,6 @@ import org.apache.catalina.connector.http.HttpConnector;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.loader.WebappClassLoader;
 import org.apache.catalina.loader.WebappLoader;
-import org.apache.catalina.session.StandardManager;
 import org.apache.naming.resources.ProxyDirContext;
 
 /**
@@ -61,14 +60,14 @@ public class Bootstrap {
             ((Lifecycle)connector).start();
             ((Lifecycle)context ).start();
 
-            WebappClassLoader classLoader = (WebappClassLoader)loader.getClassLoader();
+            /*WebappClassLoader classLoader = (WebappClassLoader)loader.getClassLoader();
 
             System.out.println("Resource docBase "+ ((ProxyDirContext)classLoader.getResources()).getDocBase());
             String[] repositories =  classLoader.findRepositories();
             for (String repos : repositories){
                 System.out.println("repository:" + repos);
             }
-
+*/
             System.in.read();
 
             ((Lifecycle)context ).stop();

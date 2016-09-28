@@ -146,7 +146,7 @@ public class ResponseFacade implements ServletResponse {
         return response.getCharacterEncoding();
     }
 
-    @Override
+    //@Override
     public String getContentType() {
         return null;
     }
@@ -181,7 +181,7 @@ public class ResponseFacade implements ServletResponse {
 
     }
 
-    @Override
+   // @Override
     public void setCharacterEncoding(String charset) {
 
     }

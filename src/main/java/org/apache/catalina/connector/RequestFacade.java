@@ -255,7 +255,7 @@ public class RequestFacade implements ServletRequest {
         return request.getRealPath(path);
     }
 
-    @Override
+   /* @Override
     public int getRemotePort() {
         return 0;
     }
@@ -273,7 +273,7 @@ public class RequestFacade implements ServletRequest {
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 
 
 }

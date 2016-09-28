@@ -194,7 +194,7 @@ public class Request implements ServletRequest {
         return null;
     }
 
-    @Override
+   /* @Override
     public int getRemotePort() {
         return 0;
     }
@@ -212,5 +212,5 @@ public class Request implements ServletRequest {
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 }

@@ -146,7 +146,7 @@ public class RequestFacade implements ServletRequest {
         return null;
     }
 
-    @Override
+    /*@Override
     public int getRemotePort() {
         return 0;
     }
@@ -164,5 +164,5 @@ public class RequestFacade implements ServletRequest {
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 }

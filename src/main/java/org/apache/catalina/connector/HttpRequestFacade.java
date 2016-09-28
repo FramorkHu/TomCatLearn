@@ -168,7 +168,7 @@ public final class HttpRequestFacade
     }
 
 
-    @Override
+    /*@Override
     public int getRemotePort() {
         return 0;
     }
@@ -186,5 +186,5 @@ public final class HttpRequestFacade
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 }

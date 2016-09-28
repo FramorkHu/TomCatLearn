@@ -1,13 +1,11 @@
-package com.learn.ex13.pyrmont.startup;
+package com.learn.ex14.pyrmont.startup;
 
 import com.learn.ex13.pyrmont.core.SimpleContextConfig;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.http.HttpConnector;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.core.StandardWrapper;
+import org.apache.catalina.core.*;
 import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.startup.EngineConfig;
 
 /**
  * Created by huyan on 2016/9/23.
@@ -48,18 +46,37 @@ public class Bootstrap {
         context.addServletMapping("/Primitive", "Primitive");
         context.addServletMapping("/Modern", "Modern");
 
-        connector.setContainer(host);
-        try {
-            connector.initialize();
-            ((Lifecycle) connector).start();
-            ((Lifecycle) host).start();
+        Server server = new StandardServer();
+        Service service = new StandardService();
+        service.setName("Stand-alone Service");
+        service.addConnector(connector);
+        service.setContainer(host);
 
-            // make the application wait until we press a key.
-            System.in.read();
-            ((Lifecycle) host).stop();
+        server.addService(service);
+        Runtime.getRuntime().addShutdownHook(new ShutDownThread());
+
+        try {
+            server.initialize();
+            ((Lifecycle)server).start();
+            server.await();
+
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        try {
+            ((Lifecycle)server).stop();
+        } catch (LifecycleException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+class ShutDownThread extends Thread{
+
+    @Override
+    public void run() {
+        System.out.println("exit");
     }
 }

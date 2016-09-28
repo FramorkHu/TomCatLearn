@@ -467,10 +467,10 @@ public class HttpResponse implements HttpServletResponse {
         return writer;
     }
 
-    @Override
+    /*@Override
     public void setCharacterEncoding(String charset) {
 
-    }
+    }*/
 
     /**
      * Has the output of this response already been committed?

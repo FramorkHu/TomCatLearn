@@ -200,7 +200,7 @@ public class MappingRequest
     public BufferedReader getReader() throws IOException { return null; }
     public String getRealPath(String path) { return null; }
 
-    @Override
+   /* @Override
     public int getRemotePort() {
         return 0;
     }
@@ -218,7 +218,7 @@ public class MappingRequest
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 
     public String getRemoteAddr() { return null; }
     public String getRemoteHost() { return null; }

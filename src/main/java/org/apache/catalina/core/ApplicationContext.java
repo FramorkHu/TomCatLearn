@@ -401,7 +401,7 @@ public class ApplicationContext
     }
 
 
-    @Override
+    //@Override
     public String getContextPath() {
         return null;
     }

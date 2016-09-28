@@ -740,7 +740,7 @@ public class HttpRequestBase
 
     }
 
-    @Override
+    /*@Override
     public int getRemotePort() {
         return 0;
     }
@@ -758,7 +758,7 @@ public class HttpRequestBase
     @Override
     public int getLocalPort() {
         return 0;
-    }
+    }*/
 
 
     /**

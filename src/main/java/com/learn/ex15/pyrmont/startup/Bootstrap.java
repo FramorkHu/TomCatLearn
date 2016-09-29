@@ -7,6 +7,7 @@ import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.catalina.loader.WebappLoader;
+import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
 
 /**

@@ -137,9 +137,9 @@ public class ContextRuleSet extends RuleSetBase {
     public void addRuleInstances(Digester digester) {
 
         if (!isDefaultContext()) {
-            digester.addObjectCreate(prefix + "Context",
-                                     "org.apache.catalina.core.StandardContext",
-                                     "className");
+                digester.addObjectCreate(prefix + "Context",
+                                         "org.apache.catalina.core.StandardContext",
+                                         "className");
         } else {
             digester.addObjectCreate(prefix + "Context",
                                      "org.apache.catalina.core.StandardDefaultContext",

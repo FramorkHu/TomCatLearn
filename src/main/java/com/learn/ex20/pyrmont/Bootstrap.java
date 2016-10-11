@@ -1,13 +1,9 @@
-package com.learn.ex15.pyrmont.startup;
+package com.learn.ex20.pyrmont;
 
 import org.apache.catalina.*;
 import org.apache.catalina.connector.http.HttpConnector;
-import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.core.StandardService;
+import org.apache.catalina.core.*;
 import org.apache.catalina.loader.WebappLoader;
-import org.apache.catalina.startup.Catalina;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.HostConfig;
 
@@ -23,22 +19,24 @@ public class Bootstrap {
         Connector connector = new HttpConnector();
         Loader loader = new WebappLoader();
 
-        Context context = new StandardContext();
-        LifecycleListener contextConfig = new ContextConfig();
-        ((Lifecycle)context).addLifecycleListener(contextConfig);
-        context.setPath("/app1");
-        context.setDocBase("app1");
-        context.setLoader(loader);
+        Engine engine = new StandardEngine();
+        engine.setName("Catalina");
+        engine.setDefaultHost("localhost");
+        engine.setLoader(loader);
 
         Host host = new StandardHost();
         host.setName("localhost");
         host.setAppBase("webapp");
         ((Lifecycle)host).addLifecycleListener(new HostConfig());
 
+        //host.setLoader(loader);
+
+        engine.addChild(host);
+
         Server server = new StandardServer();
         Service service = new StandardService();
         service.addConnector(connector);
-        service.setContainer(host);
+        service.setContainer(engine);
 
         server.addService(service);
 

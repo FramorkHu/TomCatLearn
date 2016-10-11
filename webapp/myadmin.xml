@@ -1,2 +1,2 @@
-<?xml version="1.0"?>
-<Context reloadable="true" privileged="true" debug="8" docBase="../server/webapps/myadmin" path="/myadmin"> </Context>
+<Context reloadable="true" privileged="true" docBase="../webapp/myadmin/" path="/myadmin">
+</Context>

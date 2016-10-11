@@ -7,12 +7,20 @@ import org.apache.catalina.core.*;
 import org.apache.catalina.loader.WebappLoader;
 import org.apache.catalina.startup.EngineConfig;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Created by huyan on 2016/9/23.
  */
 public class Bootstrap {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        System.setProperty("catalina.base", System.getProperty("user.dir"));
+
+        File file = new File(System.getProperty("catalina.base"),"webapp");
+        String filePaht = file.getAbsolutePath();//.getCanonicalPath();
+        String[] datas = file.list();
 
         System.setProperty("catalina.base", System.getProperty("user.dir"));
         Connector connector = new HttpConnector();
